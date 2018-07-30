@@ -207,17 +207,15 @@ searchbinreq $ocamldoc
 searchbinreq $ar
 searchbinreq perl
 
+ocaml_ccomp=`ocamlc -config | grep "^c_compiler:" | cut -d ' ' -f 2-`
+
 if test -n "$CC"; then
   searchbinreq "$CC"
   cc="$CC"
   ccopt="$CFLAGS"
-elif ! searchbin 'gcc'; then
-  cc='gcc'
-  ccopt="-O3 -Wall -Wextra $CFLAGS"
 else
-  searchbinreq 'cc'
-  cc='cc'
-  ccopt="-O3 -Wall -Wextra $CFLAGS"
+    cc=$ocaml_ccomp
+    ccopt="-O3 -Wall -Wextra $CFLAGS"
 fi
 
 # optional native-code generation
@@ -301,7 +299,12 @@ arch='none'
 case $host in
     x86_64-*linux-gnu|x86_64-kfreebsd-gnu)
         ccdef="-DZ_ELF -DZ_DOT_LABEL_PREFIX $ccdef"
-        arch='x86_64';;
+        if test "x$wordsize" = "x64"; then
+            arch='x86_64'
+        else
+            arch='i686'
+        fi
+        ;;
     i486-*linux-gnu|i686-*linux-gnu|i486-kfreebsd-gnu)
         ccdef="-DZ_ELF -DZ_DOT_LABEL_PREFIX $ccdef"
         arch='i686';;
